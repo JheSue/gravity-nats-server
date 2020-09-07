@@ -16,7 +16,7 @@ jobs:
     - name: build and publish to Registry
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
-        username: ${{ secrets.GITHUB_USERNAME }}
+        username: $GITHUB_ACTOR
         password: ${{ secrets.GITHUB_TOKEN }}
         dockerfile: ./docker/Dockerfile
         registry: docker.pkg.github.com
