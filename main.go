@@ -16,7 +16,7 @@ func main() {
 	routes := []*url.URL{}
 	routes = append(routes, &url.URL{
 		Scheme: "nats",
-		Host:   "0.0.0.0:6222",
+		Host:   "nats-server-cluster-mgmt:6222",
 	})
 
 	// generate server options
