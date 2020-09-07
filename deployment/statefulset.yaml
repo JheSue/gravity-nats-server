@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nats-server-cluster
+
+spec:
+  replicas: 3 # by default is 1
+  selector:
+    matchLabels:
+        app: nats # has to match .spec.selector.matchLabels
+        nats_cluster: nats-server-cluster
+        
+  serviceName: nats-server
+  template:
+    metadata:
+      labels:
+        app: nats # has to match .spec.selector.matchLabels
+        nats_cluster: nats-server-cluster
+    spec:
+      containers:
+      - name: nats-server
+        image: iamjhe/nats-server:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4222
+          name: nats
+          protocol: TCP
+        - containerPort: 6222
+          name: nats-mgmt
+          protocol: TCP
