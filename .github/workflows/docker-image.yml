@@ -1,0 +1,25 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout stage
+      uses: actions/checkout@v2
+
+    - name: build and publish to Registry
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        username: ${{ secrets.GITHUB_USERNAME }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        dockerfile: ./docker/Dockerfile
+        registry: docker.pkg.github.com
+        name: qaz52897/nats-server/nats-server
+        tags: latest
+
