@@ -15,4 +15,5 @@ COPY --from=builder /nats-server /nats-erver
 
 EXPOSE 4222 6222
 
+ENTRYPOINT ["sh"]
 CMD ["/nats-server"]
