@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"net"
 	"net/url"
@@ -33,18 +32,15 @@ func main() {
 		},
 		Routes: routes,
 	}
-	optData, _ := json.Marshal(opts.Clone())
-
-	log.Println(string(optData))
 
 	// New server
 	ser := server.New(&opts)
-
-	log.Println(ser.NumRoutes())
+	ser.ConfigureLogger()
 
 	// Run server
 	err := server.Run(ser)
 	if err != nil {
 		log.Println(err)
 	}
+
 }
