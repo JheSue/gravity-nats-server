@@ -26,9 +26,10 @@ func main() {
 		Host: "0.0.0.0",
 		Port: 4222,
 		Cluster: server.ClusterOpts{
-			Host:      "0.0.0.0",
-			Port:      6222,
-			Advertise: ipAddr.String(),
+			Host:           "0.0.0.0",
+			Port:           6222,
+			Advertise:      ipAddr.String(),
+			ConnectRetries: 10,
 		},
 		Routes: routes,
 	}
