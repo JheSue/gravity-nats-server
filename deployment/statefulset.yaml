@@ -4,18 +4,19 @@ metadata:
   name: nats-server-cluster
 
 spec:
-  replicas: 3 # by default is 1
+  replicas: 3
   selector:
     matchLabels:
-        app: nats # has to match .spec.selector.matchLabels
+        app: nats
         nats_cluster: nats-server-cluster
         
   serviceName: nats-server
   template:
     metadata:
       labels:
-        app: nats # has to match .spec.selector.matchLabels
+        app: nats
         nats_cluster: nats-server-cluster
+        nats_version: latest
     spec:
       containers:
       - name: nats-server
