@@ -32,7 +32,7 @@ func main() {
 			ConnectRetries: 10,
 		},
 		Routes: routes,
-		Debug:  true,
+		//Debug:  true,
 	}
 
 	// New server
