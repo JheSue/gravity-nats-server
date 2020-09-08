@@ -2,15 +2,18 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/nats-io/gnatsd/server"
 	"log"
+	"net"
 	"net/url"
 	"os"
+
+	"github.com/nats-io/gnatsd/server"
 )
 
 func main() {
-	//get hostname
+	//get container ip
 	hostname, _ := os.Hostname()
+	ipAddr, _ := net.ResolveIPAddr("ip", hostname)
 
 	// generate routers object
 	routes := []*url.URL{}
@@ -24,10 +27,9 @@ func main() {
 		Host: "0.0.0.0",
 		Port: 4222,
 		Cluster: server.ClusterOpts{
-			ConnectRetries: -1,
-			Host:           "0.0.0.0",
-			Port:           6222,
-			Advertise:      hostname,
+			Host:      "0.0.0.0",
+			Port:      6222,
+			Advertise: ipAddr.String(),
 		},
 		Routes: routes,
 	}
