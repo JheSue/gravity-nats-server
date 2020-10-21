@@ -1,5 +1,5 @@
 # build stage
-FROM golang:1.13-alpine AS builder
+FROM golang:1.15.3-alpine3.12 AS builder
 
 WORKDIR /
 
@@ -9,7 +9,7 @@ RUN CGO_ENABLED=0 go build -installsuffix cgo -o /nats-server
 
 
 # Final stage
-FROM alpine:3.8
+FROM alpine:3.12
 
 COPY --from=builder /nats-server /nats-server
 
