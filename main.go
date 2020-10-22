@@ -6,10 +6,18 @@ import (
 	"net/url"
 	"os"
 
+	"flag"
 	"github.com/nats-io/gnatsd/server"
 )
 
+var routerMGMT = flag.String("routers", "nats-server-cluster-mgmt:6222", "Input mgmt service name and port")
+
 func main() {
+	flag.Parse()
+	if *routerMGMT == "" {
+		log.Fatal("--routers are required.")
+	}
+
 	//get container ip
 	hostname, _ := os.Hostname()
 	ipAddr, _ := net.ResolveIPAddr("ip", hostname)
@@ -18,7 +26,8 @@ func main() {
 	routes := []*url.URL{}
 	routes = append(routes, &url.URL{
 		Scheme: "nats",
-		Host:   "nats-server-cluster-mgmt:6222",
+		//Host:   "nats-server-cluster-mgmt:6222",
+		Host: *routerMGMT,
 	})
 
 	// generate server options
