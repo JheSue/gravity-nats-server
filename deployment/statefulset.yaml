@@ -10,16 +10,18 @@ spec:
         app: nats
         nats_cluster: nats-server-cluster
         
-  serviceName: nats-server
+  serviceName: nats-server-cluster-mgmt
   template:
     metadata:
       labels:
         app: nats
         nats_cluster: nats-server-cluster
-        nats_version: latest
     spec:
       containers:
       - name: nats-server
+        command:
+          - /nats-server
+          - --routers=nats-server-cluster-mgmt:6222
         image: iamjhe/nats-server:latest
         imagePullPolicy: Always
         ports:

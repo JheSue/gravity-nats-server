@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"flag"
-	"github.com/nats-io/gnatsd/server"
+	"github.com/nats-io/nats-server/v2/server"
 )
 
 var routerMGMT = flag.String("routers", "nats-server-cluster-mgmt:6222", "Input mgmt service name and port")
@@ -25,7 +25,7 @@ func main() {
 	// generate routers object
 	routes := []*url.URL{}
 	routes = append(routes, &url.URL{
-		Scheme: "nats",
+		Scheme: "nats-route",
 		//Host:   "nats-server-cluster-mgmt:6222",
 		Host: *routerMGMT,
 	})
@@ -45,11 +45,14 @@ func main() {
 	}
 
 	// New server
-	ser := server.New(&opts)
+	ser, err := server.NewServer(&opts)
+	if err != nil {
+		log.Fatal(err)
+	}
 	ser.ConfigureLogger()
 
 	// Run server
-	err := server.Run(ser)
+	err = server.Run(ser)
 	if err != nil {
 		log.Println(err)
 	}
