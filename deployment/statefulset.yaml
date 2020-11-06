@@ -1,33 +1,47 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: nats-server-cluster
+  name: gravity-nats
 
 spec:
   replicas: 3
   selector:
     matchLabels:
         app: nats
-        nats_cluster: nats-server-cluster
+        nats_cluster: gravity-nats
         
-  serviceName: nats-server-cluster-mgmt
+  serviceName: gravity-nats-mgmt
   template:
     metadata:
       labels:
         app: nats
-        nats_cluster: nats-server-cluster
+        nats_cluster: gravity-nats
     spec:
       containers:
       - name: nats-server
         command:
           - /nats-server
-          - --routers=nats-server-cluster-mgmt:6222
-        image: iamjhe/nats-server:latest
+          - --routes=gravity-nats-mgmt:6222
+        image: brobridgehub/nats-server:latest
         imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8222
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 60
+          failureThreshold: 3
+          successThreshold: 1
+          timeoutSeconds: 10
+
         ports:
         - containerPort: 4222
           name: nats
           protocol: TCP
         - containerPort: 6222
           name: nats-mgmt
+          protocol: TCP
+        - containerPort: 8222
+          name: nats-http
           protocol: TCP

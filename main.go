@@ -10,12 +10,12 @@ import (
 	"github.com/nats-io/nats-server/v2/server"
 )
 
-var routerMGMT = flag.String("routers", "nats-server-cluster-mgmt:6222", "Input mgmt service name and port")
+var routerMGMT = flag.String("routes", "nats-server-cluster-mgmt:6222", "Input mgmt service name and port")
 
 func main() {
 	flag.Parse()
 	if *routerMGMT == "" {
-		log.Fatal("--routers are required.")
+		log.Fatal("--routes are required.")
 	}
 
 	//get container ip
@@ -42,6 +42,9 @@ func main() {
 		},
 		Routes: routes,
 		//Debug:  true,
+		HTTPHost: "0.0.0.0",
+		HTTPPort: 8222,
+		//PidFile:  "/var/run/nats/nats.pid",
 	}
 
 	// New server
