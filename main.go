@@ -6,29 +6,31 @@ import (
 	"net/url"
 	"os"
 
-	"flag"
 	"github.com/nats-io/nats-server/v2/server"
+	flag "github.com/spf13/pflag"
 )
 
-var routerMGMT = flag.String("routes", "nats-server-cluster-mgmt:6222", "Input mgmt service name and port")
+var (
+	defaultRoutes = []string{"gravity-nats-0.gravity-nats-mgmt.default.svc.cluster.local"}
+	routerMGMT    = flag.StringSlice("routes", defaultRoutes, "Input mgmt service name and port")
+)
 
 func main() {
 	flag.Parse()
-	if *routerMGMT == "" {
-		log.Fatal("--routes are required.")
-	}
 
 	//get container ip
 	hostname, _ := os.Hostname()
 	ipAddr, _ := net.ResolveIPAddr("ip", hostname)
 
-	// generate routers object
+	// generate routes object
 	routes := []*url.URL{}
-	routes = append(routes, &url.URL{
-		Scheme: "nats-route",
-		//Host:   "nats-server-cluster-mgmt:6222",
-		Host: *routerMGMT,
-	})
+	for _, r := range *routerMGMT {
+		routes = append(routes, &url.URL{
+			Scheme: "nats-route",
+			//Host:   "nats-server-cluster-mgmt:6222",
+			Host: r,
+		})
+	}
 
 	// generate server options
 	opts := server.Options{
@@ -40,8 +42,8 @@ func main() {
 			Advertise:      ipAddr.String(),
 			ConnectRetries: 10,
 		},
-		Routes: routes,
 		//Debug:  true,
+		Routes:   routes,
 		HTTPHost: "0.0.0.0",
 		HTTPPort: 8222,
 		//PidFile:  "/var/run/nats/nats.pid",

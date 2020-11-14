@@ -21,7 +21,9 @@ spec:
       - name: nats-server
         command:
           - /nats-server
-          - --routes=gravity-nats-mgmt:6222
+          - --routes=gravity-nats-0.gravity-nats-mgmt.default.svc.cluster.local:6222
+          - --routes=gravity-nats-1.gravity-nats-mgmt.default.svc.cluster.local:6222
+          - --routes=gravity-nats-2.gravity-nats-mgmt.default.svc.cluster.local:6222
         image: brobridgehub/nats-server:latest
         imagePullPolicy: Always
         livenessProbe:
