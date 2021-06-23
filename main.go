@@ -43,9 +43,10 @@ func main() {
 			ConnectRetries: 10,
 		},
 		//Debug:  true,
-		Routes:   routes,
-		HTTPHost: "0.0.0.0",
-		HTTPPort: 8222,
+		Routes:     routes,
+		HTTPHost:   "0.0.0.0",
+		HTTPPort:   8222,
+		MaxPayload: 1024 * 1024 * 10,
 		//PidFile:  "/var/run/nats/nats.pid",
 	}
 
