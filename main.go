@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/nats-io/nats-server/v2/server"
 	flag "github.com/spf13/pflag"
@@ -43,10 +44,11 @@ func main() {
 			ConnectRetries: 10,
 		},
 		//Debug:  true,
-		Routes:     routes,
-		HTTPHost:   "0.0.0.0",
-		HTTPPort:   8222,
-		MaxPayload: 1024 * 1024 * 10,
+		Routes:        routes,
+		HTTPHost:      "0.0.0.0",
+		HTTPPort:      8222,
+		MaxPayload:    1024 * 1024 * 32,
+		WriteDeadline: 10 * time.Second,
 		//PidFile:  "/var/run/nats/nats.pid",
 	}
 
@@ -63,4 +65,5 @@ func main() {
 		log.Println(err)
 	}
 
+	select {}
 }
