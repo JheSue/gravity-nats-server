@@ -14,7 +14,7 @@ FROM alpine:3.15.0
 
 WORKDIR /
 
-RUN apk update && apk upgrade --available
+RUN apk update && apk upgrade --available && apk add tzdata
 RUN adduser -u 1001 1001 -D
 
 COPY --from=builder /nats-server /nats-server
@@ -30,5 +30,6 @@ ENV XDG_DATA_HOME /.nsc
 ENV XDG_CONFIG_HOME /.nsc/.config
 
 EXPOSE 4222 6222 1883
+ENV TZ="Asia/Taipei"
 
 CMD ["/nats-server"]
