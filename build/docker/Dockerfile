@@ -1,5 +1,5 @@
 # build stage
-FROM golang:1.17.6-alpine3.15 AS builder
+FROM golang:1.21.4-alpine3.18 AS builder
 
 WORKDIR /
 
@@ -10,7 +10,7 @@ RUN go build -o /nats-server
 
 
 # Final stage
-FROM alpine:3.15.0
+FROM alpine:3.18.0
 
 WORKDIR /
 
@@ -21,7 +21,10 @@ COPY --from=builder /nats-server /nats-server
 COPY --from=builder /build/docker/generate-key.sh /generate-key.sh
 COPY --from=natsio/nats-box:latest /usr/local/bin/nats /usr/local/bin/nsc /usr/local/bin/
 
-RUN mkdir -p  /datastore && chmod 700 -R /datastore && chown -R 1001:1001 /datastore /generate-key.sh
+RUN mkdir -p  /datastore && \
+	chown -R 1001:0 /datastore /generate-key.sh && \
+	chmod -R g+rwX /datastore && \
+	chmod 750 /generate-key.sh
 
 USER 1001
 
