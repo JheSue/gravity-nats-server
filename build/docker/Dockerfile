@@ -1,5 +1,5 @@
 # build stage
-FROM golang:1.21.4-alpine3.18 AS builder
+FROM golang:1.21.7-alpine3.19 AS builder
 
 WORKDIR /
 
@@ -10,7 +10,7 @@ RUN go build -o /nats-server
 
 
 # Final stage
-FROM alpine:3.18.0
+FROM alpine:3.19.1
 
 WORKDIR /
 
