@@ -1,6 +1,11 @@
 # build stage
 FROM golang:1.21.7-alpine3.19 AS builder
 
+ENV GOBIN=/
+
+ARG VERSION_NSC=2.8.7
+ARG VERSION_NATS=0.1.5
+
 WORKDIR /
 
 COPY . .
@@ -8,6 +13,8 @@ COPY . .
 RUN apk add --update build-base && apk upgrade --available
 RUN go build -o /nats-server
 
+RUN go install -ldflags="-X main.version=${VERSION_NSC}" github.com/nats-io/nsc/v2@v${VERSION_NSC} &&\
+	go install github.com/nats-io/natscli/nats@v${VERSION_NATS}
 
 # Final stage
 FROM alpine:3.19.1
@@ -19,7 +26,9 @@ RUN adduser -u 1001 1001 -D
 
 COPY --from=builder /nats-server /nats-server
 COPY --from=builder /build/docker/generate-key.sh /generate-key.sh
-COPY --from=natsio/nats-box:latest /usr/local/bin/nats /usr/local/bin/nsc /usr/local/bin/
+COPY --from=builder /nats /nats
+COPY --from=builder /nsc /nsc
+#COPY --from=natsio/nats-box:latest /usr/local/bin/nats /usr/local/bin/nsc /usr/local/bin/
 
 RUN mkdir -p  /datastore && \
 	chown -R 1001:0 /datastore /generate-key.sh && \
