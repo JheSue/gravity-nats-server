@@ -1,5 +1,5 @@
 # build stage
-FROM golang:1.21.7-alpine3.19 AS builder
+FROM golang:1.21.13-alpine3.20 AS builder
 
 ENV GOBIN=/
 
@@ -17,7 +17,7 @@ RUN go install -ldflags="-X main.version=${VERSION_NSC}" github.com/nats-io/nsc/
 	go install github.com/nats-io/natscli/nats@v${VERSION_NATS}
 
 # Final stage
-FROM alpine:3.19.1
+FROM alpine:3.20
 
 WORKDIR /
 
