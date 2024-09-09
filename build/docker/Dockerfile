@@ -1,5 +1,5 @@
 # build stage
-FROM golang:1.21.13-alpine3.20 AS builder
+FROM golang:1.23.1-alpine3.20 AS builder
 
 ENV GOBIN=/
 
@@ -11,10 +11,10 @@ WORKDIR /
 COPY . .
 
 RUN apk add --update build-base && apk upgrade --available
-RUN go build -o /nats-server
+RUN go build -ldflags="-s -w" -o /nats-server
 
-RUN go install -ldflags="-X main.version=${VERSION_NSC}" github.com/nats-io/nsc/v2@v${VERSION_NSC} &&\
-	go install github.com/nats-io/natscli/nats@v${VERSION_NATS}
+RUN go install -ldflags="-X main.version=${VERSION_NSC} -s -w" github.com/nats-io/nsc/v2@v${VERSION_NSC} &&\
+	go install -ldflags="-s -w" github.com/nats-io/natscli/nats@v${VERSION_NATS}
 
 # Final stage
 FROM alpine:3.20
