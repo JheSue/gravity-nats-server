@@ -17,13 +17,14 @@ var (
 	defaultRoutes      = []string{}
 	defaultClusterName = "nats-cluster"
 	defaultHostname, _ = os.Hostname()
-	defaultStoreDir    = "/datastore"
+	defaultStoreDir    = "./datastore"
 	defaultConfigFile  = ""
 	routerMGMT         = flag.StringSlice("routes", defaultRoutes, "Set mgmt service name and port")
 	clusterName        = flag.String("clusterName", defaultClusterName, "Set cluster name")
 	serverName         = flag.String("serverName", defaultHostname, "Set server name")
 	storeDir           = flag.String("storeDir", defaultStoreDir, "Set Store Dir")
 	enableJetStream    = flag.Bool("enableJetStream", true, "enable JetStream")
+	jetStreamMaxMemory = flag.Int64("jetStreamMaxMemory", 4, "Set JetStream Max Memory, unit: GB")
 	enableMQTTBroker   = flag.Bool("enableMQTTBroker", false, "enable MQTT Broker")
 	configFile         = flag.String("configFile", defaultConfigFile, "configuration file")
 )
@@ -69,16 +70,17 @@ func main() {
 		})
 	*/
 	opts := server.Options{
-		Host:          "0.0.0.0",
-		Port:          4222,
-		HTTPHost:      "0.0.0.0",
-		HTTPPort:      8222,
-		MaxPayload:    1024 * 1024 * 64,
-		WriteDeadline: 10 * time.Second,
-		JetStream:     *enableJetStream,
-		ServerName:    *serverName,
-		StoreDir:      sdir,
-		ConfigFile:    *configFile,
+		Host:               "0.0.0.0",
+		Port:               4222,
+		HTTPHost:           "0.0.0.0",
+		HTTPPort:           8222,
+		MaxPayload:         1024 * 1024 * 64,
+		WriteDeadline:      10 * time.Second,
+		JetStream:          *enableJetStream,
+		JetStreamMaxMemory: *jetStreamMaxMemory * 1024 * 1024 * 1024,
+		ServerName:         *serverName,
+		StoreDir:           sdir,
+		ConfigFile:         *configFile,
 		//Users:         users,
 		//Accounts:      accounts,
 		//SystemAccount: "admin",
