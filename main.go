@@ -24,7 +24,7 @@ var (
 	serverName         = flag.String("serverName", defaultHostname, "Set server name")
 	storeDir           = flag.String("storeDir", defaultStoreDir, "Set Store Dir")
 	enableJetStream    = flag.Bool("enableJetStream", true, "enable JetStream")
-	jetStreamMaxMemory = flag.Int64("jetStreamMaxMemory", 4, "Set JetStream Max Memory, unit: GB")
+	jetStreamMaxMemory = flag.Int64("jetStreamMaxMemory", 4000, "Set JetStream Max Memory, unit: MB")
 	enableMQTTBroker   = flag.Bool("enableMQTTBroker", false, "enable MQTT Broker")
 	configFile         = flag.String("configFile", defaultConfigFile, "configuration file")
 )
@@ -77,7 +77,7 @@ func main() {
 		MaxPayload:         1024 * 1024 * 64,
 		WriteDeadline:      10 * time.Second,
 		JetStream:          *enableJetStream,
-		JetStreamMaxMemory: *jetStreamMaxMemory * 1024 * 1024 * 1024,
+		JetStreamMaxMemory: *jetStreamMaxMemory * 1024 * 1024,
 		ServerName:         *serverName,
 		StoreDir:           sdir,
 		ConfigFile:         *configFile,
