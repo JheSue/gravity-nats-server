@@ -103,7 +103,11 @@ func main() {
 			Host:           "0.0.0.0",
 			Port:           6222,
 			Advertise:      ipAddr.String(),
-			ConnectRetries: 10,
+			ConnectRetries: 600,
+			PoolSize:       10,
+			Compression: server.CompressionOpts{
+				Mode: "s2_fast",
+			},
 		}
 	}
 
