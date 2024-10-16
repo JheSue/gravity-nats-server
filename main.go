@@ -10,6 +10,7 @@ import (
 
 	"github.com/nats-io/nats-server/v2/server"
 	flag "github.com/spf13/pflag"
+	_ "go.uber.org/automaxprocs"
 )
 
 var (
@@ -25,6 +26,7 @@ var (
 	storeDir           = flag.String("storeDir", defaultStoreDir, "Set Store Dir")
 	enableJetStream    = flag.Bool("enableJetStream", true, "enable JetStream")
 	jetStreamMaxMemory = flag.Int64("jetStreamMaxMemory", 4000, "Set JetStream Max Memory, unit: MB")
+	jetStreamMaxStore  = flag.Int64("jetStreamMaxStore", 0, "Set JetStream Max Store, unit: MB")
 	enableMQTTBroker   = flag.Bool("enableMQTTBroker", false, "enable MQTT Broker")
 	configFile         = flag.String("configFile", defaultConfigFile, "configuration file")
 )
@@ -86,6 +88,9 @@ func main() {
 		//SystemAccount: "admin",
 		//PidFile:  "/var/run/nats/nats.pid",
 		//Debug:  true,
+	}
+	if *jetStreamMaxStore != 0 {
+		opts.JetStreamMaxStore = *jetStreamMaxStore * 1024 * 1024
 	}
 
 	if *configFile != "" {
