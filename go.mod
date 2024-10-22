@@ -3,7 +3,7 @@ module nats-server
 go 1.23.1
 
 require (
-	github.com/nats-io/nats-server/v2 v2.10.21
+	github.com/nats-io/nats-server/v2 v2.10.22
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/automaxprocs v1.6.0
 )
