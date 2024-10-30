@@ -88,6 +88,12 @@ func main() {
 		//SystemAccount: "admin",
 		//PidFile:  "/var/run/nats/nats.pid",
 		//Debug:  true,
+		//MaxConn:      1024 * 4,
+		//SyncAlways:             true,
+		SyncInterval:           30 * time.Second,
+		NoSublistCache:         true,
+		DisableJetStreamBanner: true,
+		Logtime:                true,
 	}
 	if *jetStreamMaxStore != 0 {
 		opts.JetStreamMaxStore = *jetStreamMaxStore * 1024 * 1024
@@ -109,7 +115,7 @@ func main() {
 			Port:           6222,
 			Advertise:      ipAddr.String(),
 			ConnectRetries: 600,
-			PoolSize:       10,
+			PoolSize:       3,
 			Compression: server.CompressionOpts{
 				Mode: "s2_fast",
 			},
