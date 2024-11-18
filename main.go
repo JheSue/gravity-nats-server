@@ -6,11 +6,12 @@ import (
 	"net"
 	"net/url"
 	"os"
+	//"runtime"
 	"time"
 
 	"github.com/nats-io/nats-server/v2/server"
 	flag "github.com/spf13/pflag"
-	_ "go.uber.org/automaxprocs"
+	//_ "go.uber.org/automaxprocs"
 )
 
 var (
@@ -25,13 +26,15 @@ var (
 	serverName         = flag.String("serverName", defaultHostname, "Set server name")
 	storeDir           = flag.String("storeDir", defaultStoreDir, "Set Store Dir")
 	enableJetStream    = flag.Bool("enableJetStream", true, "enable JetStream")
-	jetStreamMaxMemory = flag.Int64("jetStreamMaxMemory", 4000, "Set JetStream Max Memory, unit: MB")
+	jetStreamMaxMemory = flag.Int64("jetStreamMaxMemory", 0, "Set JetStream Max Memory, unit: MB")
 	jetStreamMaxStore  = flag.Int64("jetStreamMaxStore", 0, "Set JetStream Max Store, unit: MB")
 	enableMQTTBroker   = flag.Bool("enableMQTTBroker", false, "enable MQTT Broker")
 	configFile         = flag.String("configFile", defaultConfigFile, "configuration file")
+	maxPayload         = flag.Int32("maxPayload", 8, "Set JetStream Max Payload Size, unit: MB")
 )
 
 func main() {
+	//runtime.GOMAXPROCS(16)
 	flag.Parse()
 
 	//get container ip
@@ -72,31 +75,40 @@ func main() {
 		})
 	*/
 	opts := server.Options{
-		Host:               "0.0.0.0",
-		Port:               4222,
-		HTTPHost:           "0.0.0.0",
-		HTTPPort:           8222,
-		MaxPayload:         1024 * 1024 * 64,
-		WriteDeadline:      10 * time.Second,
-		JetStream:          *enableJetStream,
-		JetStreamMaxMemory: *jetStreamMaxMemory * 1024 * 1024,
-		ServerName:         *serverName,
-		StoreDir:           sdir,
-		ConfigFile:         *configFile,
+		Host:     "0.0.0.0",
+		Port:     4222,
+		HTTPHost: "0.0.0.0",
+		HTTPPort: 8222,
+		//MaxPayload:         1024 * 1024 * 64,
+		WriteDeadline: 10 * time.Second,
+		JetStream:     *enableJetStream,
+		ServerName:    *serverName,
+		StoreDir:      sdir,
+		ConfigFile:    *configFile,
 		//Users:         users,
 		//Accounts:      accounts,
 		//SystemAccount: "admin",
 		//PidFile:  "/var/run/nats/nats.pid",
 		//Debug:  true,
-		//MaxConn:      1024 * 4,
+		//MaxConn: 1024 * 4,
+		//MaxPending:    32 * 1024 * 1024,
 		//SyncAlways:             true,
 		SyncInterval:           30 * time.Second,
 		NoSublistCache:         true,
 		DisableJetStreamBanner: true,
 		Logtime:                true,
 	}
+
+	if *maxPayload != 0 {
+		opts.MaxPayload = *maxPayload * 1024 * 1024
+	}
+
 	if *jetStreamMaxStore != 0 {
 		opts.JetStreamMaxStore = *jetStreamMaxStore * 1024 * 1024
+	}
+
+	if *jetStreamMaxMemory != 0 {
+		opts.JetStreamMaxMemory = *jetStreamMaxMemory * 1024 * 1024
 	}
 
 	if *configFile != "" {
@@ -117,7 +129,9 @@ func main() {
 			ConnectRetries: 600,
 			PoolSize:       3,
 			Compression: server.CompressionOpts{
-				Mode: "s2_fast",
+				//Mode: "s2_fast",
+				//Mode: "s2_best",
+				Mode: "off",
 			},
 		}
 	}
