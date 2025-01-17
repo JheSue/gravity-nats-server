@@ -1,0 +1,164 @@
+name: Docker Image CI
+
+on:
+  push:
+    tags: [ '*' ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: brobridgeorg/nats-server
+  TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db,public.ecr.aws/aquasecurity/trivy-db
+  TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db,public.ecr.aws/aquasecurity/trivy-java-db
+  TRIVY_CHECKS_BUNDLE_REPOSITORY: public.ecr.aws/aquasecurity/trivy-checks
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: alpine
+            dockerfile: Dockerfile.alpine
+            suffix: null
+            enable_latest: true
+          - os: scratch
+            dockerfile: Dockerfile.scratch
+            suffix: "-scratch"
+            enable_latest: false
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+
+    - name: Get the latest tag
+      run: |
+        LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
+        echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+
+    - name: Checkout to the latest tag
+      run: git checkout ${{ env.LATEST_TAG }}
+
+    - name: Log in to the Container registry
+      uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@v5.5.1
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} #${{ matrix.suffix }}
+        tags: |
+          type=raw,value=${{ env.LATEST_TAG }}${{ matrix.suffix }},enable=${{ matrix.suffix != null && github.event_name != 'schedule' }}
+          type=raw,value=${{ env.LATEST_TAG }},enable=${{ matrix.suffix == null }}
+          type=raw,value=${{ env.LATEST_TAG }}${{ matrix.suffix }}-{{date 'YYYYMMDD'}},enable=${{ matrix.suffix != null && github.event_name != 'schedule' }}
+          type=raw,value=${{ env.LATEST_TAG }}-{{date 'YYYYMMDD'}},enable=${{ matrix.suffix == null }}
+          type=raw,value=latest,enable=${{ matrix.enable_latest }}
+          type=raw,value=latest,enable=${{ github.event_name == 'schedule' && matrix.suffix == null }}
+          #type=semver,pattern={{raw}}
+          #type=sha,prefix=
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+      with:
+        context: .
+        file: ./build/docker/${{ matrix.dockerfile }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+
+    - name: Append tags to file
+      run: |
+        mkdir -p outputs
+        echo "${{ steps.meta.outputs.tags }}" >> outputs/tags${{ matrix.suffix }}.txt
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: outputs
+        path: outputs/*.txt
+
+  scan-image:
+    runs-on: ubuntu-latest
+    needs: build-and-push-image
+    outputs:
+      trivy_report: ${{ steps.parse-trivy-report.outputs.trivy_report }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Log in to the Container registry
+      uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set lowercase image name
+      id: set-image-name
+      run: echo "LOWERCASE_IMAGE_NAME=${{ env.REGISTRY }}/$(echo ${{ env.IMAGE_NAME }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+    - name: Pull Image
+      run: |
+        docker pull ${{ env.LOWERCASE_IMAGE_NAME }}:latest
+
+    - name: Scan Docker image with Trivy
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.LOWERCASE_IMAGE_NAME }}:latest
+        scan-type: image
+        format: 'table'
+        output: 'trivy-report.txt'
+
+    - name: Parse Trivy report
+      id: parse-trivy-report
+      run: |
+        report=$(cat trivy-report.txt | grep -B 2 Total)
+        echo "trivy_report<<EOF" >> $GITHUB_OUTPUT
+        echo "$report" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+  aggregate-tags:
+    runs-on: ubuntu-latest
+    needs: build-and-push-image
+    outputs:
+      all_tags: ${{ steps.collect.outputs.all_tags }}
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: outputs
+          name: outputs
+
+      - name: Aggregate all tags
+        id: collect
+        run: |
+          # Combine all tag files into one
+          cat outputs/* > all_tags.txt
+          echo "all_tags<<EOF" >> $GITHUB_OUTPUT
+          cat all_tags.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+  notification-discord:
+    runs-on: ubuntu-latest
+    needs: [ aggregate-tags, scan-image ]
+    steps:
+    - name: Discord notification
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      uses: Ilshidur/action-discord@master
+      with:
+        args: |
+          The project {{ EVENT_PAYLOAD.repository.full_name }} has been built.
+
+          Image:
+          **${{ needs.aggregate-tags.outputs.all_tags }}**
+
+          Scan summary:
+          ```
+          ${{ needs.scan-image.outputs.trivy_report }}
+          ```
