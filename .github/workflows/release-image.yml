@@ -77,7 +77,7 @@ jobs:
         mkdir -p outputs
         echo "${{ steps.meta.outputs.tags }}" >> outputs/tags${{ matrix.suffix }}.txt
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: outputs
         path: outputs/*.txt
@@ -129,7 +129,7 @@ jobs:
       all_tags: ${{ steps.collect.outputs.all_tags }}
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: outputs
           name: outputs
