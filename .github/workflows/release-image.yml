@@ -137,7 +137,7 @@ jobs:
         id: collect
         run: |
           # Combine all tag files into one
-          cat outputs/* > all_tags.txt
+          cat outputs/*/* > all_tags.txt
           echo "all_tags<<EOF" >> $GITHUB_OUTPUT
           cat all_tags.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
