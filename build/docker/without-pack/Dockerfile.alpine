@@ -15,16 +15,16 @@ COPY . .
 
 # 強制更新到最新版本
 RUN go mod download && \
-    go get -u github.com/nats-io/nats-server/v2@latest && \
+    go get -u github.com/nats-io/nats-server/v2@v2.11.1 && \
     go get -u golang.org/x/crypto@latest && \
-    go get -u golang.org/x/net@latest && \
+    go get -u golang.org/x/net@v0.38.0 && \
     go get -u all && \
     go mod tidy
 
 RUN go build -ldflags="-s -w" -o /nats-server
 
 RUN go install -ldflags="-X main.version=${VERSION_NSC} -s -w" github.com/nats-io/nsc/v2@v${VERSION_NSC} &&\
-	go install -ldflags="-s -w" github.com/nats-io/natscli/nats@v${VERSION_NATS}
+	go install -ldflags="-s -w" github.com/nats-io/natscli/nats@latest
 
 # RUN upx -6 /nats /nsc /nats-server
 
