@@ -3,8 +3,8 @@ FROM golang:1.23.1-alpine3.20 AS builder
 
 ENV GOBIN=/
 
-ARG VERSION_NSC=2.8.7
-ARG VERSION_NATS=0.1.5
+ARG VERSION_NSC=2.10.2
+ARG VERSION_NATS=0.1.6
 
 WORKDIR /
 
@@ -39,11 +39,12 @@ RUN mkdir -p  /datastore && \
 
 USER 1001
 
-ENV NKEYS_PATH /.nsc/nkeys
-ENV XDG_DATA_HOME /.nsc
-ENV XDG_CONFIG_HOME /.nsc/.config
+ENV NKEYS_PATH=/datastore/.nsc/nkeys \
+	XDG_DATA_HOME=/datastore/.nsc \
+	XDG_CONFIG_HOME=/datastore/.nsc/.config \
+	TZ="Asia/Taipei" \
+	PATH=$PATH:/
 
-EXPOSE 4222 6222 1883
-ENV TZ="Asia/Taipei"
+EXPOSE 4222 6222 8222 1883
 
 CMD ["/nats-server"]
